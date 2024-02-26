@@ -1,0 +1,47 @@
+name: Trigger auto deployment for container-app-pq34kyshzw3ii
+
+# When this action will be executed
+on:
+  # Automatically trigger it when detected changes in repo
+  push:
+    branches: 
+      [ master ]
+    paths:
+    - '//**'
+    - '.github/workflows/container-app-pq34kyshzw3ii-AutoDeployTrigger-2984af13-80e7-40b7-93b8-a684c7506ffc.yml'
+
+  # Allow manual trigger 
+  workflow_dispatch:      
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions: 
+      id-token: write #This is required for requesting the OIDC JWT Token
+      contents: read #Required when GH token is used to authenticate with private repo
+
+    steps:
+      - name: Checkout to the branch
+        uses: actions/checkout@v2
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.CONTAINERAPPPQ34KYSHZW3II_AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.CONTAINERAPPPQ34KYSHZW3II_AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.CONTAINERAPPPQ34KYSHZW3II_AZURE_SUBSCRIPTION_ID }}
+
+      - name: Build and push container image to registry
+        uses: azure/container-apps-deploy-action@v2
+        with:
+          appSourcePath: ${{ github.workspace }} 
+          registryUrl: containerregistrypq34kyshzw3ii.azurecr.io
+          registryUsername: ${{ secrets.CONTAINERAPPPQ34KYSHZW3II_REGISTRY_USERNAME }}
+          registryPassword: ${{ secrets.CONTAINERAPPPQ34KYSHZW3II_REGISTRY_PASSWORD }}
+          containerAppName: container-app-pq34kyshzw3ii
+          resourceGroup: patientdoctorappa8de
+          imageToBuild: containerregistrypq34kyshzw3ii.azurecr.io/container-app-pq34kyshzw3ii:${{ github.sha }}
+          _buildArgumentsKey_: |
+            _buildArgumentsValues_
+
+
